@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -181,8 +182,17 @@ public class RMI_LookUpServer extends UnicastRemoteObject implements RMI_LookUpI
         RMI_LookUpServer obj = new RMI_LookUpServer(f);
 
         // Bind this object instance to the name "RmiServer"
-        Naming.rebind("//" + ip + "/RMI_LookUpServer", obj);
-        System.out.println("PeerServer bound in registry");
+        System.setProperty("java.rmi.server.hostname", ip);
+        InetAddress addr = null;
+		try {
+			addr = InetAddress.getByName(ip);
+		}
+		catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+        String host = addr.getHostName();
+        Naming.rebind("//" + host + ":1099" + "/RMI_LookUpServer", obj);
+        System.out.println("Server bound in registry at: " + "//" + host + ":1099" + "/RMI_LookUpServer");
 
     }
     
@@ -198,26 +208,13 @@ public class RMI_LookUpServer extends UnicastRemoteObject implements RMI_LookUpI
 
 				if (args.length > 1) {
 
-			    	if (args[0].contains(".") && !args[1].contains(".")) {
-
-			    		ip = args[0];
-			    		filePath = args[1];
-
-			    	}
-			    	else if (!args[0].contains(".") && args[1].contains(".")) {
-
-			    		ip = args[1];
-			    		filePath = args[0];
-
-			    	}
+			    	ip = args[0];
+			    	filePath = args[1];
 
 				}
 				else {
 
-					if (args[0].contains("."))
-			    		ip = args[0];
-			    	else
-			    		filePath = args[0];
+					ip = args[0];
 
 				}
 
