@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -72,8 +73,19 @@ public class RMI_LookUpClient {
 
 	public void startClient(String ip) throws MalformedURLException, RemoteException, NotBoundException {
 
-		
-		RMI_LookUpInterface rlui = (RMI_LookUpInterface)Naming.lookup("//" + ip + "/RMI_LookUpServer");
+		//System.getProperty("")
+		//System.setProperty("java.rmi.server.hostname", ip);
+		//System.out.println("HOST_NAME: " + System.getProperty("java.rmi.server.hostname"));
+		InetAddress addr = null;
+		try {
+			addr = InetAddress.getByName(ip);
+		}
+		catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		String host = addr.getHostName();
+		RMI_LookUpInterface rlui = (RMI_LookUpInterface)Naming.lookup("//" + host + ":1099" + "/RMI_LookUpServer");
+		System.out.println("Client connected to: " + "//" + host + ":1099" + "/RMI_LookUpServer");
         try {
 			runClient(rlui);
 		}
@@ -95,26 +107,13 @@ public class RMI_LookUpClient {
 
 			    if (args.length > 1) {
 
-			    	if (args[0].contains(".") && !args[1].contains(".")) {
-
-			    		ip = args[0];
-			    		filePath = args[1];
-
-			    	}
-			    	else if (!args[0].contains(".") && args[1].contains(".")) {
-
-			    		ip = args[1];
-			    		filePath = args[0];
-
-			    	}
+			    	ip = args[0];
+			    	filePath = args[1];
 
 				}
 				else {
 
-					if (args[0].contains("."))
-			    		ip = args[0];
-			    	else
-			    		filePath = args[0];
+					ip = args[0];
 
 				}
 
